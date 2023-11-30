@@ -1,0 +1,26 @@
+spring:
+  profiles:
+    #运行的环境
+    active: test
+  application:
+    name: mychat
+  datasource:
+    url: jdbc:mysql://${mychat.mysql.host}:${mychat.mysql.port}/${mychat.mysql.database}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: ${mychat.mysql.username}
+    password: ${mychat.mysql.password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  redis:
+    # Redis服务器地址
+    host: ${mychat.redis.host}
+    # Redis服务器端口号
+    port: ${mychat.redis.port}
+    # 使用的数据库索引，默认是0
+    database: ${mychat.redis.database}
+    # 连接超时时间
+    timeout: 1800000
+    # 设置密码
+    password: ${mychat.redis.password}
+  jackson:
+    serialization:
+      # 在交互时自动把时间转为时间戳
+      write-dates-as-timestamps: true

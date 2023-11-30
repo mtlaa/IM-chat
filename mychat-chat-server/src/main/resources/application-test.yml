@@ -1,0 +1,14 @@
+mychat:
+  mysql:
+    host: dl
+    port: 3306
+    username: root
+    password: 123456
+    database: mychat
+
+  redis:
+    host: dl
+    port: 6379
+    password: 123456
+    database: 8
+
