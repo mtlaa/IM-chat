@@ -33,6 +33,18 @@
             <artifactId>knife4j-spring-boot-starter</artifactId>
             <version>2.0.9</version>
         </dependency>
+
+        <!--    使用mybatis-plus自动生成crud代码    -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-generator</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>mybatis-plus-extension</artifactId>
+                    <groupId>com.baomidou</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 
 </project>
