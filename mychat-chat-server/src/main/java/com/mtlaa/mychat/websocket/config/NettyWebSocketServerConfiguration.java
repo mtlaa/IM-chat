@@ -1,6 +1,7 @@
 package com.mtlaa.mychat.websocket.config;
 
 import com.mtlaa.mychat.websocket.NettyWebSocketServerHandler;
+import com.mtlaa.mychat.websocket.WebSocketAuthorizeHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -72,9 +73,9 @@ public class NettyWebSocketServerConfiguration {
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         // 这整个pipeline里面加各种处理器，接收到一个请求是按顺序执行的
                         ChannelPipeline pipeline = socketChannel.pipeline();
-                        //30秒客户端没有向服务器发送心跳则关闭连接（30秒没有收到客户端的消息）
+                        //30秒客户端没有向服务器发送心跳则关闭连接（30秒没有收到客户端的消息）  TODO
                         // 注意：这只是一个检测器，只会检测并发出事件，我们需要自己捕获事件并且手动执行操作。 读空闲 写空闲 读写空闲
-                        pipeline.addLast(new IdleStateHandler(30, 0, 0));
+//                        pipeline.addLast(new IdleStateHandler(30, 0, 0));
                         // 因为使用http协议，所以需要使用http的编码器，解码器
                         pipeline.addLast(new HttpServerCodec());
                         // 以块方式写，添加 chunkedWriter 处理器
@@ -87,6 +88,8 @@ public class NettyWebSocketServerConfiguration {
                         pipeline.addLast(new HttpObjectAggregator(8192));
                         //保存用户ip
 //                        pipeline.addLast(new HttpHeadersHandler());
+                        // 获取token并保存到channel中，用于后续认证
+                        pipeline.addLast(new WebSocketAuthorizeHandler());
                         /*
                          * 说明：
                          *  1. 对于 WebSocket，它的数据是以帧frame 的形式传递的；

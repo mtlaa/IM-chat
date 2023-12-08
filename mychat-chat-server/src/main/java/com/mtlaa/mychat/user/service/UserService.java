@@ -2,6 +2,7 @@ package com.mtlaa.mychat.user.service;
 
 import com.mtlaa.mychat.user.domain.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.springframework.stereotype.Service;
 
 /**
  * <p>
@@ -11,6 +12,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author mtlaa
  * @since 2023-11-30
  */
-public interface IUserService extends IService<User> {
+@Service
+public interface UserService {
+
+    Long register(User user);
 
 }

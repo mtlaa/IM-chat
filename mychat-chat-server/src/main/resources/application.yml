@@ -24,3 +24,17 @@ spring:
     serialization:
       # 在交互时自动把时间转为时间戳
       write-dates-as-timestamps: true
+
+wx:
+  mp:
+    configs:
+      - app-id: ${mychat.wx.app-id}
+        aes-key: ${mychat.wx.aes-key}
+        secret: ${mychat.wx.secret}
+        token: ${mychat.wx.token}
+    callback: ${mychat.wx.callback}
+
+mychat:
+  jwt:
+    secret-key: mtlaa
+    ttl: 1000000

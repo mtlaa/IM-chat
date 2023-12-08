@@ -1,8 +1,12 @@
 package com.mtlaa.mychat.websocket;
 
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
 import com.mtlaa.mychat.websocket.domain.dto.WebSocketRequest;
 import com.mtlaa.mychat.websocket.domain.enums.WebSocketRequestTypeEnum;
+import com.mtlaa.mychat.websocket.service.WebSocketService;
+import com.mtlaa.mychat.websocket.utils.NettyUtil;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -11,6 +15,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Create 2023/11/30 11:10
@@ -21,6 +26,30 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @ChannelHandler.Sharable
 public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
+
+    private WebSocketService webSocketService;
+
+    /**
+     * 当连接建立时自动调用
+     */
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        // 获取WebSocketService的bean，并且保存，供该处理类使用
+        webSocketService = SpringUtil.getBean(WebSocketService.class);
+
+        // 保存当前ws连接的 Channel
+        webSocketService.connect(ctx.channel());
+    }
+
+    /**
+     * 当连接断开时自动调用
+     */
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        log.info("客户端断开ws 或 心跳超时...");
+        webSocketService.disconnect(ctx.channel());
+    }
+
     /**
      * 建立websocket连接(握手)会发出事件：成功或失败
      * 该方法获取到发出的事件
@@ -28,17 +57,19 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if(evt instanceof WebSocketServerProtocolHandler.HandshakeComplete){
-            log.info("websocket握手成功");
+            log.info("websocket握手成功,进行认证...");
+            String token = NettyUtil.getAttr(ctx.channel(), NettyUtil.TOKEN);
+            webSocketService.handleAuthorizeJwt(ctx.channel(), token);
         }else if(evt instanceof IdleStateEvent){
             // 捕获心跳包发送的空闲事件
             IdleStateEvent event = (IdleStateEvent) evt;
             if(event.state() == IdleState.READER_IDLE){
-                // 如果是读空闲则关闭ws连接
-                ctx.channel().close();
                 log.info("读空闲：关闭ws连接...");
-                // TODO 用户下线的操作
+                // 如果是读空闲则关闭ws连接
+                ctx.channel().close();   // 会调用到 channelInactive
             }
         }
+
     }
 
     /**
@@ -46,19 +77,19 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
      */
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, TextWebSocketFrame textWebSocketFrame) throws Exception {
-        String json = textWebSocketFrame.text();  // 该json是请求体
+        String json = textWebSocketFrame.text();  // 该json是请求体，该请求体由前端发送 （WebSocketRequest的json格式）
         WebSocketRequest request = JSONUtil.toBean(json, WebSocketRequest.class);
         log.info("websocket请求：{}", request);
         // 根据请求type进行不同的处理
         // 获取到的websocket消息是TextWebSocketFrame，同样发送给前端的消息也需要是TextWebSocketFrame类型
-        switch (WebSocketRequestTypeEnum.of(request.getType())){
-            case AUTHORIZE:
+        switch (WebSocketRequestTypeEnum.of(request.getType())){  // 根据类型code获取对应的枚举类型
+            case AUTHORIZE:  // 在登录成功后，如果连接断开重新连接，只需要校验jwt
+                webSocketService.handleAuthorizeJwt(channelHandlerContext.channel(), request.getData());
                 break;
             case HEARTBEAT:
                 break;
             case LOGIN:
-                log.info("请求登录二维码");
-                channelHandlerContext.channel().writeAndFlush(new TextWebSocketFrame("from web"));
+                webSocketService.handleLoginRequest(channelHandlerContext.channel());
         }
     }
 }

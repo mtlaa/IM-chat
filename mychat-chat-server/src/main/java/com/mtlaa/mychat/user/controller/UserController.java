@@ -1,9 +1,12 @@
 package com.mtlaa.mychat.user.controller;
 
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * <p>
@@ -13,9 +16,14 @@ import org.springframework.stereotype.Controller;
  * @author mtlaa
  * @since 2023-11-30
  */
-@Controller
+@RestController
 @RequestMapping("/user")
+@Slf4j
 public class UserController {
-
+    @GetMapping()
+    public String test(){
+        log.info("get .......");
+        return "jahaha";
+    }
 }
 

@@ -5,10 +5,15 @@ mychat:
     username: root
     password: 123456
     database: mychat
-
   redis:
     host: dl
     port: 6379
     password: 123456
-    database: 8
+    database: 10
+  wx:
+    app-id: wxee25fb4bc0926c6b
+    aes-key: 1
+    secret: df77b688b3a8785911558b8fe79ef32b
+    token: mtlaa
+    callback: http://mtlaaa.w1.luyouxia.net
 
