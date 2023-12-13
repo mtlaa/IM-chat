@@ -1,8 +1,12 @@
 package com.mtlaa.mychat;
 
 import com.mtlaa.mychat.user.dao.UserDao;
+import com.mtlaa.mychat.user.domain.entity.ItemConfig;
 import com.mtlaa.mychat.user.domain.entity.User;
+import com.mtlaa.mychat.user.domain.enums.IdempotentEnum;
+import com.mtlaa.mychat.user.domain.enums.ItemEnum;
 import com.mtlaa.mychat.user.service.LoginService;
+import com.mtlaa.mychat.user.service.UserBackpackService;
 import com.mtlaa.redis.utils.RedisUtils;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpService;
@@ -26,8 +30,20 @@ public class SpringTest {
     private RedissonClient redissonClient;
     @Autowired
     private LoginService loginService;
+    @Autowired
+    private UserBackpackService userBackpackService;
 
+    @Test
+    public void testAcquireItem() throws Throwable {
+        userBackpackService.acquireItem(11004L, ItemEnum.REG_TOP10_BADGE.getId(), IdempotentEnum.UID, "11004");
+    }
 
+    @Test
+    public void testGetJwt(){
+        String login = loginService.login(11004L);
+        System.out.println("Bearer " + login);
+
+    }
     @Test
     public void testRedis(){
         RedisUtils.set("name", 1234);

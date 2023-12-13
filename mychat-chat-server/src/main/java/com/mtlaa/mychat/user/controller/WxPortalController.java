@@ -2,6 +2,7 @@ package com.mtlaa.mychat.user.controller;
 
 
 import com.mtlaa.mychat.user.service.WxMsgService;
+import io.swagger.annotations.Api;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
@@ -25,6 +26,7 @@ import org.springframework.web.servlet.view.RedirectView;
 @AllArgsConstructor
 @RestController
 @RequestMapping("wx/portal/public")
+@Api(tags = "微信相关接口")
 public class WxPortalController {
 
     @Autowired
@@ -33,11 +35,11 @@ public class WxPortalController {
     private final WxMpService wxService;
     private final WxMpMessageRouter messageRouter;
 
-    @GetMapping("/test")
-    public String getQrcode(Integer sceneId) throws WxErrorException {
-        log.info("请求二维码...");
-        return wxService.getQrcodeService().qrCodeCreateTmpTicket(sceneId, 1000).getUrl();
-    }
+//    @GetMapping("/test")
+//    public String getQrcode(Integer sceneId) throws WxErrorException {
+//        log.info("请求二维码...");
+//        return wxService.getQrcodeService().qrCodeCreateTmpTicket(sceneId, 1000).getUrl();
+//    }
 
     /**
      * 在微信测试号管理界面配置url提交时会发起该请求

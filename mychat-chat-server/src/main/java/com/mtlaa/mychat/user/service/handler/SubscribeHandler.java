@@ -1,5 +1,6 @@
 package com.mtlaa.mychat.user.service.handler;
 
+import com.mtlaa.mychat.user.service.WxMsgService;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.common.session.WxSessionManager;
 import me.chanjar.weixin.mp.api.WxMpService;
@@ -16,6 +17,8 @@ import java.util.Map;
 @Component
 public class SubscribeHandler extends AbstractHandler {
 
+    @Autowired
+    private WxMsgService wxMsgService;
 
     @Override
     public WxMpXmlOutMessage handle(WxMpXmlMessage wxMessage,
@@ -41,7 +44,7 @@ public class SubscribeHandler extends AbstractHandler {
             this.logger.error(e.getMessage(), e);
         }
 
-        return null;
+        return wxMsgService.scan(wxMessage, weixinService);
     }
 
     /**

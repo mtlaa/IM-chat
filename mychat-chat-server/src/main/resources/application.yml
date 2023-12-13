@@ -24,6 +24,10 @@ spring:
     serialization:
       # 在交互时自动把时间转为时间戳
       write-dates-as-timestamps: true
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
 
 wx:
   mp:
@@ -38,3 +42,7 @@ mychat:
   jwt:
     secret-key: mtlaa
     ttl: 1000000
+
+#mybatis-plus:
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

@@ -32,7 +32,7 @@ public class LoginServiceImpl implements LoginService {
         claims.put("id", userId);
         String jwt = JwtUtil.createJWT(jwtProperties.getSecretKey(), jwtProperties.getTtl(), claims);
 
-        RedisUtils.set(RedisKey.getKey(userId), jwt, 3, TimeUnit.DAYS);
+        RedisUtils.set(RedisKey.getKey(userId), jwt, 15, TimeUnit.DAYS);
         return jwt;
     }
 
