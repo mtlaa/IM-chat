@@ -72,6 +72,12 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
 
     }
 
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        log.warn("异常发生，异常消息 ", cause);
+        ctx.channel().close();
+    }
+
     /**
      *  当收到一个来自websocket的新消息，该消息被websocket的处理器转换为TextWebSocketFrame格式
      */

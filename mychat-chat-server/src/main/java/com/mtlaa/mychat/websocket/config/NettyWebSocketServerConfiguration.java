@@ -1,7 +1,7 @@
 package com.mtlaa.mychat.websocket.config;
 
 import com.mtlaa.mychat.websocket.NettyWebSocketServerHandler;
-import com.mtlaa.mychat.websocket.WebSocketAuthorizeHandler;
+import com.mtlaa.mychat.websocket.WebSocketHeaderHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -88,8 +88,8 @@ public class NettyWebSocketServerConfiguration {
                         pipeline.addLast(new HttpObjectAggregator(8192));
                         //保存用户ip
 //                        pipeline.addLast(new HttpHeadersHandler());
-                        // 获取token并保存到channel中，用于后续认证
-                        pipeline.addLast(new WebSocketAuthorizeHandler());
+                        // 获取token和IP并保存到channel中，用于后续认证
+                        pipeline.addLast(new WebSocketHeaderHandler());
                         /*
                          * 说明：
                          *  1. 对于 WebSocket，它的数据是以帧frame 的形式传递的；

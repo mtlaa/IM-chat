@@ -4,6 +4,7 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.mtlaa.mychat.common.event.UserOnlineEvent;
 import com.mtlaa.mychat.user.dao.UserDao;
 import com.mtlaa.mychat.user.domain.entity.User;
 import com.mtlaa.mychat.user.service.LoginService;
@@ -13,6 +14,7 @@ import com.mtlaa.mychat.websocket.domain.vo.WSLoginUrl;
 import com.mtlaa.mychat.websocket.domain.vo.WebSocketResponse;
 import com.mtlaa.mychat.websocket.service.WebSocketService;
 import com.mtlaa.mychat.websocket.service.adapter.WebSocketAdapter;
+import com.mtlaa.mychat.websocket.utils.NettyUtil;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lombok.extern.slf4j.Slf4j;
@@ -20,9 +22,11 @@ import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.result.WxMpQrCodeTicket;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,6 +60,8 @@ public class WebSocketServiceImpl implements WebSocketService {
     private LoginService loginService;
     @Autowired
     private UserDao userDao;
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * 保存连接的ws channel
@@ -73,9 +79,12 @@ public class WebSocketServiceImpl implements WebSocketService {
     @Override
     public void disconnect(Channel channel) {
         WebSocketConnectInfo removeUserInfo = ONLINE_WS_MAP.remove(channel);
-        // TODO 用户下线的数据表操作
+        // TODO 用户下线的数据表操作  发出事件
     }
 
+    /**
+     * 重新扫码登录时的登录成功
+     */
     @Override
     public void loginSuccess(Integer code, User user) {
         log.info("登录成功：{}", user);
@@ -115,6 +124,7 @@ public class WebSocketServiceImpl implements WebSocketService {
             // 校验通过
             log.info("解析jwt成功");
             User user = userDao.getById(userId);
+            // 使用JWT校验的登录成功
             commonLoginSuccess(channel, user, token);
         }
     }
@@ -126,8 +136,10 @@ public class WebSocketServiceImpl implements WebSocketService {
 
         // 推送消息
         sendMsg(channel, WebSocketAdapter.build(user, token));
-        // TODO 用户上线事件
-
+        // 用户上线事件,发送事件  填充user中字段，如IP信息
+        user.setLastOptTime(LocalDateTime.now());
+        user.refreshIp(NettyUtil.getAttr(channel, NettyUtil.IP));  // 刷新IP信息
+        applicationEventPublisher.publishEvent(new UserOnlineEvent(this, user));
     }
 
     /**

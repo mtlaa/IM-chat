@@ -37,6 +37,12 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    
+    @GetMapping("/public/test")
+    private ApiResult<String> test(){
+        log.info("测试公开请求....IP:{}", RequestHolder.get().getIp());
+        return ApiResult.success(RequestHolder.get().getIp());
+    }
 
     @GetMapping("/userInfo")
     @ApiOperation("获取用户个人信息")
