@@ -46,13 +46,6 @@ public class UserFriendController {
         return ApiResult.success(userFriendService.friendList(uid, cursorPageBaseReq));
     }
 
-    @GetMapping("/apply/unread")
-    @ApiOperation("好友未读数")
-    public ApiResult unreadNumber(){
-
-        return ApiResult.success();
-    }
-
     @PostMapping("/apply")
     @ApiOperation("加好友")
     public ApiResult<Void> apply(@RequestBody @Valid FriendApplyReq friendApplyReq){
