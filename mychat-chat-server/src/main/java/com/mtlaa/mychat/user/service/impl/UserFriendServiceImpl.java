@@ -11,6 +11,7 @@ import com.mtlaa.mychat.common.exception.BusinessException;
 import com.mtlaa.mychat.user.dao.UserApplyDao;
 import com.mtlaa.mychat.user.dao.UserDao;
 import com.mtlaa.mychat.user.dao.UserFriendDao;
+import com.mtlaa.mychat.chat.domain.entity.RoomFriend;
 import com.mtlaa.mychat.user.domain.entity.User;
 import com.mtlaa.mychat.user.domain.entity.UserApply;
 import com.mtlaa.mychat.user.domain.entity.UserFriend;
@@ -24,6 +25,7 @@ import com.mtlaa.mychat.user.domain.vo.response.friend.FriendApplyResp;
 import com.mtlaa.mychat.user.domain.vo.response.friend.FriendCheckResp;
 import com.mtlaa.mychat.user.domain.vo.response.friend.FriendResp;
 import com.mtlaa.mychat.user.domain.vo.response.friend.FriendUnreadResp;
+import com.mtlaa.mychat.chat.service.RoomService;
 import com.mtlaa.mychat.user.service.UserFriendService;
 import com.mtlaa.mychat.user.service.adapter.FriendAdapter;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +58,10 @@ public class UserFriendServiceImpl implements UserFriendService {
     @Autowired
     @Lazy
     private UserFriendService userFriendService;
+    @Autowired
+    private RoomService roomService;
+
+
     @Override
     public CursorPageBaseResp<FriendResp> friendList(Long uid, CursorPageBaseReq cursorPageBaseReq) {
         // 根据游标，获取当前用户的一页联系人
@@ -146,8 +152,8 @@ public class UserFriendServiceImpl implements UserFriendService {
         userApplyDao.agree(request.getApplyId());
         // 创建双方好友关系
         createFriend(uid, userApply.getUid());
-        // TODO 创建一个聊天房间
-
+        // 创建一个聊天房间
+        RoomFriend roomFriend = roomService.createFriendRoom(uid, userApply.getUid());
         // TODO 发送一条好友添加成功的消息
     }
 
@@ -165,8 +171,8 @@ public class UserFriendServiceImpl implements UserFriendService {
         }
         List<Long> friendRecordIds = userFriends.stream().map(UserFriend::getId).collect(Collectors.toList());
         userFriendDao.removeByIds(friendRecordIds);
-        // TODO 禁用双方的聊天房间
-
+        // 禁用双方的聊天房间
+        roomService.disableFriendRoom(uid, targetUid);
     }
 
     @Override

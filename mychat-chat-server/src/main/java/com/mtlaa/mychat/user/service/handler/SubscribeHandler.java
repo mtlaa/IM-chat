@@ -24,7 +24,7 @@ public class SubscribeHandler extends AbstractHandler {
     public WxMpXmlOutMessage handle(WxMpXmlMessage wxMessage,
                                     Map<String, Object> context, WxMpService weixinService,
                                     WxSessionManager sessionManager) throws WxErrorException {
-        // TODO 关注处理
+        // 关注处理
         this.logger.info("新关注用户 OPENID: " + wxMessage.getFromUser());
 
         WxMpXmlOutMessage responseResult = null;

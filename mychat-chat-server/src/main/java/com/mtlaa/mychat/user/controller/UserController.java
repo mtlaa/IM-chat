@@ -3,7 +3,11 @@ package com.mtlaa.mychat.user.controller;
 
 import com.mtlaa.mychat.common.domain.vo.response.ApiResult;
 import com.mtlaa.mychat.common.utils.RequestHolder;
+import com.mtlaa.mychat.user.domain.dto.ItemInfoDTO;
+import com.mtlaa.mychat.user.domain.dto.SummeryInfoDTO;
+import com.mtlaa.mychat.user.domain.vo.request.ItemInfoReq;
 import com.mtlaa.mychat.user.domain.vo.request.ModifyNameRequest;
+import com.mtlaa.mychat.user.domain.vo.request.SummeryInfoReq;
 import com.mtlaa.mychat.user.domain.vo.request.WearingBadgeRequest;
 import com.mtlaa.mychat.user.domain.vo.response.BadgeResponse;
 import com.mtlaa.mychat.user.domain.vo.response.UserInfoResponse;
@@ -76,6 +80,18 @@ public class UserController {
     public ApiResult<Void> wearBadge(@Valid @RequestBody WearingBadgeRequest wearingBadgeRequest){
         userService.wearBadge(RequestHolder.get().getUid(), wearingBadgeRequest.getBadgeId());
         return ApiResult.success();
+    }
+
+    @PostMapping("/public/summary/userInfo/batch")
+    @ApiOperation("用户聚合信息-返回的代表需要刷新的")
+    public ApiResult<List<SummeryInfoDTO>> getSummeryUserInfo(@Valid @RequestBody SummeryInfoReq req) {
+        return ApiResult.success(userService.getSummeryUserInfo(req));
+    }
+
+    @PostMapping("/public/badges/batch")
+    @ApiOperation("徽章聚合信息-返回的代表需要刷新的")
+    public ApiResult<List<ItemInfoDTO>> getItemInfo(@Valid @RequestBody ItemInfoReq req) {
+        return ApiResult.success(userService.getItemInfo(req));
     }
 
 }

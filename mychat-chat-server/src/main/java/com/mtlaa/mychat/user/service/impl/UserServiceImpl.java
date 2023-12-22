@@ -2,20 +2,27 @@ package com.mtlaa.mychat.user.service.impl;
 
 import com.mtlaa.mychat.common.event.UserRegisterEvent;
 import com.mtlaa.mychat.common.exception.BusinessException;
+import com.mtlaa.mychat.common.service.cache.BatchCache;
 import com.mtlaa.mychat.user.dao.ItemConfigDao;
 import com.mtlaa.mychat.user.dao.UserBackpackDao;
 import com.mtlaa.mychat.user.dao.UserDao;
+import com.mtlaa.mychat.user.domain.dto.ItemInfoDTO;
+import com.mtlaa.mychat.user.domain.dto.SummeryInfoDTO;
 import com.mtlaa.mychat.user.domain.entity.ItemConfig;
 import com.mtlaa.mychat.user.domain.entity.User;
 import com.mtlaa.mychat.user.domain.entity.UserBackpack;
 import com.mtlaa.mychat.user.domain.enums.ItemEnum;
 import com.mtlaa.mychat.user.domain.enums.ItemTypeEnum;
+import com.mtlaa.mychat.user.domain.vo.request.ItemInfoReq;
 import com.mtlaa.mychat.user.domain.vo.request.ModifyNameRequest;
+import com.mtlaa.mychat.user.domain.vo.request.SummeryInfoReq;
 import com.mtlaa.mychat.user.domain.vo.response.BadgeResponse;
 import com.mtlaa.mychat.user.domain.vo.response.UserInfoResponse;
 import com.mtlaa.mychat.user.service.UserService;
 import com.mtlaa.mychat.user.service.adapter.UserAdapter;
 import com.mtlaa.mychat.user.service.cache.ItemCache;
+import com.mtlaa.mychat.user.service.cache.UserCache;
+import com.mtlaa.mychat.user.service.cache.UserSummaryCache;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -23,7 +30,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -42,6 +52,10 @@ public class UserServiceImpl implements UserService {
     private ItemConfigDao itemConfigDao;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+    @Autowired
+    private UserSummaryCache userSummaryCache;
+    @Autowired
+    private UserCache userCache;
 
 
     @Override
@@ -120,4 +134,61 @@ public class UserServiceImpl implements UserService {
                 .build();
         userDao.updateById(user);
     }
+
+    /**
+     * 同步指定用户uid的用户信息（如果需要）
+     */
+    @Override
+    public List<SummeryInfoDTO> getSummeryUserInfo(SummeryInfoReq req) {
+        // 需要同步给前端用户信息的用户id集合
+        List<Long> needSyncUids = getNeedSyncUidList(req.getReqList());
+        // 从缓存获取需要同步的用户信息（加载用户信息）
+        Map<Long, SummeryInfoDTO> batch = userSummaryCache.getBatch(needSyncUids);
+        return req.getReqList()
+                .stream()
+                .map(a -> batch.containsKey(a.getUid()) ?
+                        batch.get(a.getUid()) : SummeryInfoDTO.skip(a.getUid()))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 在Redis中缓存了每个uid最新更新的时间，前端会记录上一次同步的时间，本次同步根据这两个时间判断是否需要同步
+     */
+    private List<Long> getNeedSyncUidList(List<SummeryInfoReq.infoReq> reqList) {
+        List<Long> needSyncUidList = new ArrayList<>();
+        // 从缓存获取对应uid用户的更新时间
+        List<Long> userModifyTime = userCache.getUserModifyTime(
+                reqList.stream().map(SummeryInfoReq.infoReq::getUid).collect(Collectors.toList()));
+        for (int i = 0; i < reqList.size(); i++) {
+            SummeryInfoReq.infoReq infoReq = reqList.get(i);
+            Long modifyTime = userModifyTime.get(i);
+            if (Objects.isNull(infoReq.getLastModifyTime()) ||
+                    Objects.isNull(modifyTime) || modifyTime > infoReq.getLastModifyTime()) {
+                needSyncUidList.add(infoReq.getUid());
+            }
+        }
+        return needSyncUidList;
+    }
+
+    /**
+     * 同步指定用户uid的徽章信息（如果需要）
+     * 同样是根据最后刷新的时间判断是否需要更新
+     */
+    @Override
+    public List<ItemInfoDTO> getItemInfo(ItemInfoReq req) {
+        return req.getReqList().stream().map(a -> {
+            ItemConfig itemConfig = itemCache.getById(a.getItemId());  // 从本地缓存中查找徽章信息
+            if (Objects.nonNull(a.getLastModifyTime()) &&
+                    a.getLastModifyTime() >= itemConfig.getUpdateTime().toInstant(ZoneOffset.ofHours(8)).toEpochMilli()) {
+                return ItemInfoDTO.skip(a.getItemId());
+            }
+            ItemInfoDTO dto = new ItemInfoDTO();
+            dto.setItemId(itemConfig.getId());
+            dto.setImg(itemConfig.getImg());
+            dto.setDescribe(itemConfig.getDescribe());
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
 }

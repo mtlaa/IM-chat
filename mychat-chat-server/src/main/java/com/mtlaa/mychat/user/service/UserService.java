@@ -1,8 +1,12 @@
 package com.mtlaa.mychat.user.service;
 
+import com.mtlaa.mychat.user.domain.dto.ItemInfoDTO;
+import com.mtlaa.mychat.user.domain.dto.SummeryInfoDTO;
 import com.mtlaa.mychat.user.domain.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.mtlaa.mychat.user.domain.vo.request.ItemInfoReq;
 import com.mtlaa.mychat.user.domain.vo.request.ModifyNameRequest;
+import com.mtlaa.mychat.user.domain.vo.request.SummeryInfoReq;
 import com.mtlaa.mychat.user.domain.vo.response.BadgeResponse;
 import com.mtlaa.mychat.user.domain.vo.response.UserInfoResponse;
 import org.springframework.stereotype.Service;
@@ -29,4 +33,8 @@ public interface UserService {
     List<BadgeResponse> getUserBadges(Long uid);
 
     void wearBadge(Long uid, Long itemId);
+
+    List<SummeryInfoDTO> getSummeryUserInfo(SummeryInfoReq req);
+
+    List<ItemInfoDTO> getItemInfo(ItemInfoReq req);
 }

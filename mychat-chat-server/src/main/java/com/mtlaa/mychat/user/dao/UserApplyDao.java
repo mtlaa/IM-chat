@@ -29,8 +29,8 @@ public class UserApplyDao extends ServiceImpl<UserApplyMapper, UserApply>{
         return lambdaQuery()
                 .eq(UserApply::getUid, uid)
                 .eq(UserApply::getTargetId, targetUid)
-                .eq(UserApply::getStatus, ApplyStatusEnum.WAIT_APPROVAL)
-                .eq(UserApply::getType, ApplyTypeEnum.ADD_FRIEND)
+                .eq(UserApply::getStatus, ApplyStatusEnum.WAIT_APPROVAL.getCode())
+                .eq(UserApply::getType, ApplyTypeEnum.ADD_FRIEND.getCode())
                 .one();
     }
 

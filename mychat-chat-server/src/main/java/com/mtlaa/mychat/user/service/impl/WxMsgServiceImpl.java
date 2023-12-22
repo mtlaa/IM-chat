@@ -67,7 +67,7 @@ public class WxMsgServiceImpl implements WxMsgService {
         User user = userDao.getByOpenId(openId);
         // 如果用户已经存在 且 昵称和头像不为空（已经授权） 说明用户已经注册成功
         if(user != null && StrUtil.isNotBlank(user.getAvatar()) && StrUtil.isNotBlank(user.getName())){
-            // 登录成功  TODO 需要给前端发送登录成功的消息
+            // 登录成功 需要给前端发送登录成功的消息
             webSocketService.loginSuccess(code, user);
             return WxTextBuilder.build("登录成功", wxMpXmlMessage, wxMpService);
         }
