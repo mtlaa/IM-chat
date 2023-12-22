@@ -32,4 +32,10 @@ public class UserDao extends ServiceImpl<UserMapper, User> {
                 .select(User::getId, User::getName, User::getAvatar, User::getActiveStatus)
                 .list();
     }
+
+    public void invalidUser(Long id) {
+        lambdaUpdate().set(User::getStatus, 1)
+                .eq(User::getId, id)
+                .update();
+    }
 }

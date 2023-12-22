@@ -2,15 +2,15 @@ package com.mtlaa.mychat.user.controller;
 
 
 import com.mtlaa.mychat.common.domain.vo.response.ApiResult;
+import com.mtlaa.mychat.common.exception.BusinessException;
 import com.mtlaa.mychat.common.utils.RequestHolder;
 import com.mtlaa.mychat.user.domain.dto.ItemInfoDTO;
 import com.mtlaa.mychat.user.domain.dto.SummeryInfoDTO;
-import com.mtlaa.mychat.user.domain.vo.request.ItemInfoReq;
-import com.mtlaa.mychat.user.domain.vo.request.ModifyNameRequest;
-import com.mtlaa.mychat.user.domain.vo.request.SummeryInfoReq;
-import com.mtlaa.mychat.user.domain.vo.request.WearingBadgeRequest;
+import com.mtlaa.mychat.user.domain.enums.RoleEnum;
+import com.mtlaa.mychat.user.domain.vo.request.*;
 import com.mtlaa.mychat.user.domain.vo.response.BadgeResponse;
 import com.mtlaa.mychat.user.domain.vo.response.UserInfoResponse;
+import com.mtlaa.mychat.user.service.RoleService;
 import com.mtlaa.mychat.user.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -41,6 +41,8 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private RoleService roleService;
     
     @GetMapping("/public/test")
     private ApiResult<String> test(){
@@ -92,6 +94,18 @@ public class UserController {
     @ApiOperation("徽章聚合信息-返回的代表需要刷新的")
     public ApiResult<List<ItemInfoDTO>> getItemInfo(@Valid @RequestBody ItemInfoReq req) {
         return ApiResult.success(userService.getItemInfo(req));
+    }
+
+    @PutMapping("/black")
+    @ApiOperation("拉黑用户")
+    public ApiResult<Void> blackUser(@Valid @RequestBody BlackReq blackReq){
+        Long uid = RequestHolder.get().getUid();
+        // 判断是否有拉黑权限
+        if(!roleService.hasPower(uid, RoleEnum.ADMIN)){
+            throw new BusinessException("没有拉黑用户的权限，不是admin");
+        }
+        userService.blackUser(blackReq.getUid());
+        return ApiResult.success();
     }
 
 }

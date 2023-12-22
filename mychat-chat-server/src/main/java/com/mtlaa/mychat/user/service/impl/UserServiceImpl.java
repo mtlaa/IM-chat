@@ -1,16 +1,20 @@
 package com.mtlaa.mychat.user.service.impl;
 
+import com.mtlaa.mychat.common.event.UserBlackEvent;
 import com.mtlaa.mychat.common.event.UserRegisterEvent;
 import com.mtlaa.mychat.common.exception.BusinessException;
 import com.mtlaa.mychat.common.service.cache.BatchCache;
+import com.mtlaa.mychat.user.dao.BlackDao;
 import com.mtlaa.mychat.user.dao.ItemConfigDao;
 import com.mtlaa.mychat.user.dao.UserBackpackDao;
 import com.mtlaa.mychat.user.dao.UserDao;
 import com.mtlaa.mychat.user.domain.dto.ItemInfoDTO;
 import com.mtlaa.mychat.user.domain.dto.SummeryInfoDTO;
+import com.mtlaa.mychat.user.domain.entity.Black;
 import com.mtlaa.mychat.user.domain.entity.ItemConfig;
 import com.mtlaa.mychat.user.domain.entity.User;
 import com.mtlaa.mychat.user.domain.entity.UserBackpack;
+import com.mtlaa.mychat.user.domain.enums.BlackTypeEnum;
 import com.mtlaa.mychat.user.domain.enums.ItemEnum;
 import com.mtlaa.mychat.user.domain.enums.ItemTypeEnum;
 import com.mtlaa.mychat.user.domain.vo.request.ItemInfoReq;
@@ -23,6 +27,7 @@ import com.mtlaa.mychat.user.service.adapter.UserAdapter;
 import com.mtlaa.mychat.user.service.cache.ItemCache;
 import com.mtlaa.mychat.user.service.cache.UserCache;
 import com.mtlaa.mychat.user.service.cache.UserSummaryCache;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -56,6 +61,8 @@ public class UserServiceImpl implements UserService {
     private UserSummaryCache userSummaryCache;
     @Autowired
     private UserCache userCache;
+    @Autowired
+    private BlackDao blackDao;
 
 
     @Override
@@ -189,6 +196,33 @@ public class UserServiceImpl implements UserService {
             dto.setDescribe(itemConfig.getDescribe());
             return dto;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void blackUser(Long blackUid) {
+        // 拉黑uid
+        Black black = new Black();
+        black.setType(BlackTypeEnum.UID.getType());
+        black.setTarget(blackUid.toString());
+        blackDao.save(black);
+        // 拉黑ip
+        User user = userDao.getById(blackUid);
+        blackIp(user.getIpInfo().getCreateIp());
+        if(!Objects.equals(user.getIpInfo().getCreateIp(), user.getIpInfo().getUpdateIp())) {
+            blackIp(user.getIpInfo().getUpdateIp());
+        }
+        // 发出拉黑一个人的事件
+        applicationEventPublisher.publishEvent(new UserBlackEvent(this, user));
+    }
+    private void blackIp(String ip){
+        if(StringUtils.isBlank(ip)){
+            return;
+        }
+        Black black = new Black();
+        black.setType(BlackTypeEnum.IP.getType());
+        black.setTarget(ip);
+        blackDao.save(black);
     }
 
 }

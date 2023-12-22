@@ -37,4 +37,6 @@ public interface UserService {
     List<SummeryInfoDTO> getSummeryUserInfo(SummeryInfoReq req);
 
     List<ItemInfoDTO> getItemInfo(ItemInfoReq req);
+
+    void blackUser(Long blackUid);
 }

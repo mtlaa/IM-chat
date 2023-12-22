@@ -1,5 +1,6 @@
 package com.mtlaa.mychat.common.config;
 
+import com.mtlaa.mychat.common.interceptor.BlackInterceptor;
 import com.mtlaa.mychat.common.interceptor.CollectorInterceptor;
 import com.mtlaa.mychat.common.interceptor.JwtInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,8 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
     private JwtInterceptor jwtInterceptor;
     @Autowired
     private CollectorInterceptor collectorInterceptor;
+    @Autowired
+    private BlackInterceptor blackInterceptor;
 
     /**
      * 注册自定义拦截器
@@ -25,6 +28,8 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
         registry.addInterceptor(jwtInterceptor)
                 .addPathPatterns("/capi/**");
         registry.addInterceptor(collectorInterceptor)
+                .addPathPatterns("/capi/**");
+        registry.addInterceptor(blackInterceptor)
                 .addPathPatterns("/capi/**");
     }
 }

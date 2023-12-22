@@ -21,7 +21,7 @@ public class WebSocketAdapter {
         response.setData(new WSLoginUrl(wxMpQrCodeTicket.getUrl()));
         return response;
     }
-    public static WebSocketResponse<WSLoginSuccess> build(User user, String token){
+    public static WebSocketResponse<WSLoginSuccess> build(User user, String token, boolean hasPower){
         WebSocketResponse<WSLoginSuccess> response = new WebSocketResponse<>();
         response.setType(WebSocketResponseTypeEnum.LOGIN_SUCCESS.getType());
 
@@ -29,7 +29,7 @@ public class WebSocketAdapter {
                 .uid(user.getId())
                 .avatar(user.getAvatar())
                 .name(user.getName())
-                .power(0)   // TODO 是否为管理账户
+                .power(hasPower ? 1 : 0)   // 是否为管理账户
                 .token(token)
                 .build();
         response.setData(data);

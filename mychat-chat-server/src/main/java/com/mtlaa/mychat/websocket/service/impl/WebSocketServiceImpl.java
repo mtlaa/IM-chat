@@ -7,7 +7,9 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.mtlaa.mychat.common.event.UserOnlineEvent;
 import com.mtlaa.mychat.user.dao.UserDao;
 import com.mtlaa.mychat.user.domain.entity.User;
+import com.mtlaa.mychat.user.domain.enums.RoleEnum;
 import com.mtlaa.mychat.user.service.LoginService;
+import com.mtlaa.mychat.user.service.RoleService;
 import com.mtlaa.mychat.websocket.domain.dto.WebSocketConnectInfo;
 import com.mtlaa.mychat.websocket.domain.enums.WebSocketResponseTypeEnum;
 import com.mtlaa.mychat.websocket.domain.vo.WSLoginUrl;
@@ -62,6 +64,8 @@ public class WebSocketServiceImpl implements WebSocketService {
     private UserDao userDao;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+    @Autowired
+    private RoleService roleService;
 
     /**
      * 保存连接的ws channel
@@ -129,13 +133,21 @@ public class WebSocketServiceImpl implements WebSocketService {
         }
     }
 
+    @Override
+    public void sendMsgToAll(WebSocketResponse<?> msg) {
+        ONLINE_WS_MAP.forEach((channel, wci) -> {
+            // TODO 使用线程池异步推送所有人
+            sendMsg(channel, msg);
+        });
+    }
+
     private void commonLoginSuccess(Channel channel, User user, String token) {
         // 保存user与channel的对应关系
         WebSocketConnectInfo webSocketConnectInfo = ONLINE_WS_MAP.get(channel);
         webSocketConnectInfo.setUserId(user.getId());
 
         // 推送消息
-        sendMsg(channel, WebSocketAdapter.build(user, token));
+        sendMsg(channel, WebSocketAdapter.build(user, token, roleService.hasPower(user.getId(), RoleEnum.CHAT_MANAGER)));
         // 用户上线事件,发送事件  填充user中字段，如IP信息
         user.setLastOptTime(LocalDateTime.now());
         user.refreshIp(NettyUtil.getAttr(channel, NettyUtil.IP));  // 刷新IP信息
