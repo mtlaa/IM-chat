@@ -55,6 +55,12 @@ public class RoomServiceImpl implements RoomService {
         roomFriendDao.disableRoom(roomKey);
     }
 
+    @Override
+    public RoomFriend getFriendRoom(Long uid, Long uid1) {
+        String roomKey = RoomUtils.generateRoomKey(uid, uid1);
+        return roomFriendDao.getByRoomKey(roomKey);
+    }
+
     private Room createRoom(RoomTypeEnum roomTypeEnum) {
         Room room = Room.builder()
                 .hotFlag(HotFlagEnum.NOT.getType())

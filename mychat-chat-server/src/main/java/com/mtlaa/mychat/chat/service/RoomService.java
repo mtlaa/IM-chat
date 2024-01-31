@@ -15,4 +15,6 @@ public interface RoomService {
     RoomFriend createFriendRoom(Long uid, Long uid1);
 
     void disableFriendRoom(Long uid, Long targetUid);
+
+    RoomFriend getFriendRoom(Long uid, Long uid1);
 }

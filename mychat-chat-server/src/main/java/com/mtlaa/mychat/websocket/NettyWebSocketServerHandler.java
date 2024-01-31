@@ -69,7 +69,6 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
                 ctx.channel().close();   // 会调用到 channelInactive
             }
         }
-
     }
 
     @Override

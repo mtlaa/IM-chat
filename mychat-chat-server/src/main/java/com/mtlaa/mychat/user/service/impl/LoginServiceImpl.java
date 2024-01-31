@@ -32,7 +32,7 @@ public class LoginServiceImpl implements LoginService {
         claims.put("id", userId);
         String jwt = JwtUtil.createJWT(jwtProperties.getSecretKey(), jwtProperties.getTtl(), claims);
 
-        RedisUtils.set(RedisKey.getKey(userId), jwt, 15, TimeUnit.DAYS);
+        RedisUtils.set(RedisKey.getKey(RedisKey.USER_TOKEN_KEY, userId), jwt, 15, TimeUnit.DAYS);
         return jwt;
     }
 
@@ -47,7 +47,7 @@ public class LoginServiceImpl implements LoginService {
 
         Long userId = claims.get("id", Long.class);
         if(userId == null) return null;
-        String oldToken = RedisUtils.get(RedisKey.getKey(userId), String.class);
+        String oldToken = RedisUtils.get(RedisKey.getKey(RedisKey.USER_TOKEN_KEY, userId), String.class);
         if(StrUtil.isBlank(oldToken)) return null;
 
         return token.equals(oldToken) ? userId : null;
@@ -58,7 +58,7 @@ public class LoginServiceImpl implements LoginService {
         Long userId = getValidUid(token);
         if(userId == null) return;
 
-        String key = RedisKey.getKey(userId);
+        String key = RedisKey.getKey(RedisKey.USER_TOKEN_KEY, userId);
 
         Long expire = RedisUtils.getExpire(key, TimeUnit.DAYS);
         if(expire < 1){ // 如果有效期小于1天，就续期

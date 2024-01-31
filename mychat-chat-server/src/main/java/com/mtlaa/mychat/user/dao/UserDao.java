@@ -7,6 +7,7 @@ import com.mtlaa.mychat.user.service.UserService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -37,5 +38,10 @@ public class UserDao extends ServiceImpl<UserMapper, User> {
         lambdaUpdate().set(User::getStatus, 1)
                 .eq(User::getId, id)
                 .update();
+    }
+
+    public List<Long> getAllUid() {
+        return lambdaQuery().select(User::getId)
+                .list().stream().map(User::getId).collect(Collectors.toList());
     }
 }

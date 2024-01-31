@@ -1,5 +1,6 @@
 package com.mtlaa.mychat.websocket.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONUtil;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -29,9 +30,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Create 2023/12/6 10:46
@@ -44,6 +47,12 @@ public class WebSocketServiceImpl implements WebSocketService {
      * 多人聊天室，同时建立了多个webSocket连接。由于存在多线程环境，使用ConcurrentHashMap保存
      */
     private static final Map<Channel, WebSocketConnectInfo> ONLINE_WS_MAP = new ConcurrentHashMap<>();
+    /**
+     * 所有在线的用户和对应的socket
+     * 需要保证线程安全，CopyOnWriteArrayList是juc下唯一的线程安全List
+     */
+    private static final ConcurrentHashMap<Long, CopyOnWriteArrayList<Channel>>
+            ONLINE_UID_MAP = new ConcurrentHashMap<>();
 
     public static final Duration DURATION = Duration.ofMinutes(10);  // 过期时间10分钟
 
@@ -83,7 +92,9 @@ public class WebSocketServiceImpl implements WebSocketService {
     @Override
     public void disconnect(Channel channel) {
         WebSocketConnectInfo removeUserInfo = ONLINE_WS_MAP.remove(channel);
+        ONLINE_UID_MAP.remove(removeUserInfo.getUserId());
         // TODO 用户下线的数据表操作  发出事件
+
     }
 
     /**
@@ -141,10 +152,26 @@ public class WebSocketServiceImpl implements WebSocketService {
         });
     }
 
+    @Override
+    public void sendMsgToUid(WebSocketResponse<?> webSocketResponse, Long uid) {
+        CopyOnWriteArrayList<Channel> channels = ONLINE_UID_MAP.get(uid);  // 该用户可能多端在线
+        // TODO 使用线程池异步推送
+        if (CollectionUtil.isNotEmpty(channels)){
+            channels.forEach(channel -> {
+                sendMsg(channel, webSocketResponse);
+            });
+        }else{
+            log.error("该用户不在线，uid:{}", uid);
+        }
+    }
+
     private void commonLoginSuccess(Channel channel, User user, String token) {
         // 保存user与channel的对应关系
         WebSocketConnectInfo webSocketConnectInfo = ONLINE_WS_MAP.get(channel);
         webSocketConnectInfo.setUserId(user.getId());
+
+        ONLINE_UID_MAP.putIfAbsent(user.getId(), new CopyOnWriteArrayList<>());
+        ONLINE_UID_MAP.get(user.getId()).add(channel);
 
         // 推送消息
         sendMsg(channel, WebSocketAdapter.build(user, token, roleService.hasPower(user.getId(), RoleEnum.CHAT_MANAGER)));

@@ -7,10 +7,12 @@ import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
+import java.util.Date;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.mtlaa.mychat.chat.domain.enums.HotFlagEnum;
+import com.mtlaa.mychat.chat.domain.enums.RoomTypeEnum;
+import lombok.*;
 
 /**
  * <p>
@@ -24,6 +26,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 @TableName("room")
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Room implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -50,13 +54,13 @@ public class Room implements Serializable {
      * 群最后消息的更新时间（热点群不需要写扩散，只更新这里）
      */
     @TableField("active_time")
-    private LocalDateTime activeTime;
+    private Date activeTime;
 
     /**
      * 会话中的最后一条消息id
      */
     @TableField("last_msg_id")
-    private Long lastMsgId;
+    private Long lastMsgId = 0L;
 
     /**
      * 额外信息（根据不同类型房间有不同存储的东西）
@@ -67,14 +71,29 @@ public class Room implements Serializable {
     /**
      * 创建时间
      */
-      @TableField(value = "create_time", fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
+    @TableField(value = "create_time", fill = FieldFill.INSERT)
+    private Date createTime;
 
     /**
      * 修改时间
      */
-      @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
+    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
 
+
+    @JsonIgnore
+    public boolean isHotRoom() {
+        return HotFlagEnum.of(this.hotFlag) == HotFlagEnum.YES;
+    }
+
+    @JsonIgnore
+    public boolean isRoomFriend() {
+        return RoomTypeEnum.of(this.type) == RoomTypeEnum.FRIEND;
+    }
+
+    @JsonIgnore
+    public boolean isRoomGroup() {
+        return RoomTypeEnum.of(this.type) == RoomTypeEnum.GROUP;
+    }
 
 }

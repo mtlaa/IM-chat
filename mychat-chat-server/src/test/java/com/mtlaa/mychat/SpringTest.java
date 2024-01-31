@@ -1,5 +1,8 @@
 package com.mtlaa.mychat;
 
+import com.mtlaa.mychat.oss.MinIOTemplate;
+import com.mtlaa.mychat.oss.domain.OssReq;
+import com.mtlaa.mychat.oss.domain.OssResp;
 import com.mtlaa.mychat.user.dao.UserApplyDao;
 import com.mtlaa.mychat.user.dao.UserDao;
 import com.mtlaa.mychat.user.dao.UserFriendDao;
@@ -38,6 +41,19 @@ public class SpringTest {
     private UserBackpackService userBackpackService;
     @Autowired
     private UserFriendDao userFriendDao;
+    @Autowired
+    private MinIOTemplate minIOTemplate;
+
+    @Test
+    public void testMinio(){
+        OssReq ossReq = OssReq.builder()
+                .fileName("test.png")
+                .filePath("/test")
+                .autoPath(false)
+                .build();
+        OssResp ossResp = minIOTemplate.getPreSignedObjectUrl(ossReq);
+        System.out.println(ossResp);
+    }
 
     @Test
     public void testUserFriendDao(){
@@ -66,10 +82,9 @@ public class SpringTest {
     @Test
     public void testRedisson(){
         RLock lock = redissonClient.getLock("lock1");
-        lock.lock();
+        lock.tryLock();
         System.out.println();
         lock.unlock();
-
     }
     @Test
     public void testLogin(){

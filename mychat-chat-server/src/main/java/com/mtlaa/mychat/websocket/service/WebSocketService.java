@@ -24,4 +24,6 @@ public interface WebSocketService {
     void handleAuthorizeJwt(Channel channel, String token);
 
     void sendMsgToAll(WebSocketResponse<?> msg);
+
+    void sendMsgToUid(WebSocketResponse<?> webSocketResponse, Long uid);
 }

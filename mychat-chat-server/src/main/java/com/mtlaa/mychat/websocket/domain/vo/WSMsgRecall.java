@@ -1,6 +1,7 @@
 package com.mtlaa.mychat.websocket.domain.vo;
 
 
+import com.mtlaa.mychat.chat.domain.dto.ChatMsgRecallDTO;
 import lombok.Data;
 
 /**
@@ -9,5 +10,5 @@ import lombok.Data;
  * Date: 2023-03-19
  */
 @Data
-public class WSMsgRecall  {
+public class WSMsgRecall extends ChatMsgRecallDTO {
 }

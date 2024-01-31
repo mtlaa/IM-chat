@@ -4,6 +4,7 @@ import com.mtlaa.mychat.common.event.UserBlackEvent;
 import com.mtlaa.mychat.common.event.UserRegisterEvent;
 import com.mtlaa.mychat.common.exception.BusinessException;
 import com.mtlaa.mychat.common.service.cache.BatchCache;
+import com.mtlaa.mychat.common.utils.sensitiveWord.SensitiveWordBs;
 import com.mtlaa.mychat.user.dao.BlackDao;
 import com.mtlaa.mychat.user.dao.ItemConfigDao;
 import com.mtlaa.mychat.user.dao.UserBackpackDao;
@@ -63,6 +64,8 @@ public class UserServiceImpl implements UserService {
     private UserCache userCache;
     @Autowired
     private BlackDao blackDao;
+    @Autowired
+    private SensitiveWordBs sensitiveWordBs;
 
 
     @Override
@@ -89,6 +92,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void modifyName(Long uid, ModifyNameRequest modifyNameRequest) {
+        // 判断名字里是否有敏感词
+        if (sensitiveWordBs.hasSensitiveWord(modifyNameRequest.getName())){
+            throw new BusinessException("名字非法");
+        }
         // 判断新名字是否重复
         User oldUser = userDao.getByName(modifyNameRequest.getName());
         if(Objects.nonNull(oldUser)){

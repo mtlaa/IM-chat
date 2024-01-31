@@ -17,4 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class RoomGroupDao extends ServiceImpl<RoomGroupMapper, RoomGroup> {
 
+    public RoomGroup getByRoomId(Long roomId) {
+        return lambdaQuery().eq(RoomGroup::getRoomId, roomId).one();
+    }
 }

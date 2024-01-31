@@ -23,6 +23,15 @@
             <groupId>com.mtlaa</groupId>
             <artifactId>mychat-common-starter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.mtlaa</groupId>
+            <artifactId>mychat-oss-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.mtlaa</groupId>
+            <artifactId>mychat-transaction</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

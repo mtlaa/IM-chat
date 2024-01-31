@@ -19,7 +19,7 @@ public class WebSocketHeaderHandler extends ChannelInboundHandlerAdapter {
     private static final String IP_HEADER = "X-Real-IP";
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg)   {
         if(msg instanceof FullHttpRequest){
             FullHttpRequest request = (FullHttpRequest) msg;
             UrlBuilder url = UrlBuilder.ofHttp(request.uri()); // 需要使用ofHttp，不能使用of
@@ -30,6 +30,8 @@ public class WebSocketHeaderHandler extends ChannelInboundHandlerAdapter {
             if(token != null){
                 tokenStr = token.toString();
             }
+            // TODO 测试环境免登录
+            tokenStr = "eyJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoxNzA0ODY1MTU3NDA1LCJpZCI6MTEwMDV9.RQJ6pQGMUSrLt5CIw7pyrtlxKP_3-aTyEP-YaYc43PM";
 
             // 获取IP，在http的请求头中
             HttpHeaders headers = request.headers();

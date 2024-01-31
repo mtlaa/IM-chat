@@ -40,6 +40,8 @@ public class RedisKey {
      */
     public static final String GROUP_INFO_STRING = "groupInfo:roomId_%d";
 
+    public static final String FRIEND_INFO_STRING = "friendInfo:roomId_%d";
+
 
     /**
      * 用户的信息更新时间
@@ -69,9 +71,9 @@ public class RedisKey {
      */
     public static final String USER_GLM2_TIME_LAST = "userGLM2UseTime:uid_%d";
 
-    public static String getKey(Object o){
-        return BASE_KEY + String.format(USER_TOKEN_KEY, o);
-    }
+//    public static String getKey(Object o){
+//        return BASE_KEY + String.format(USER_TOKEN_KEY, o);
+//    }
     public static String getKey(String key, Object... objects) {
         return BASE_KEY + String.format(key, objects);
     }

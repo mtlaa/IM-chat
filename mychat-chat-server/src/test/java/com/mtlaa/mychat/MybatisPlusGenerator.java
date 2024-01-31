@@ -41,10 +41,10 @@ public class MybatisPlusGenerator {
 
         //包配置
         PackageConfig packageConfig = new PackageConfig();
-        packageConfig.setParent("com.mtlaa.mychat.user");//自定义包的路径
-        packageConfig.setEntity("domain.entity");
+        packageConfig.setParent("com.mtlaa.mychat.chat");//自定义包的路径
+//        packageConfig.setEntity("domain.entity");
         packageConfig.setMapper("mapper");
-        packageConfig.setController("controller");
+//        packageConfig.setController("controller");
         packageConfig.setServiceImpl("dao");
         autoGenerator.setPackageInfo(packageConfig);
 
@@ -60,9 +60,9 @@ public class MybatisPlusGenerator {
         strategyConfig.setEntityTableFieldAnnotationEnable(true);
         //todo 这里修改需要自动生成的表结构
         strategyConfig.setInclude(
-                "black",
-                "role",
-                "user_role"
+                "message",
+                "contact",
+                "group_member"
         );
         //自动填充字段,在项目开发过程中,例如创建时间，修改时间,每次，都需要我们来指定，太麻烦了,设置为自动填充规则，就不需要我们赋值咯
         List<TableFill> list = new ArrayList<TableFill>();
