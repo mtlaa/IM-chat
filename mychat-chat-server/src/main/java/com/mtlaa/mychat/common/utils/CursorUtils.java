@@ -44,7 +44,7 @@ public class CursorUtils {
                 .map(Pair::getValue)
                 .map(String::valueOf)
                 .orElse(null);
-        Boolean isLast = result.size() != cursorPageBaseReq.getPageSize();
+        Boolean isLast = (Boolean) (result.size() != cursorPageBaseReq.getPageSize());
         return new CursorPageBaseResp<>(cursor, isLast, result);
     }
 
@@ -70,7 +70,7 @@ public class CursorUtils {
                 .map(CursorUtils::toCursor)
                 .orElse(null);
         //判断是否最后一页
-        Boolean isLast = page.getRecords().size() != request.getPageSize();
+        Boolean isLast = (Boolean) (page.getRecords().size() != request.getPageSize());
         return new CursorPageBaseResp<>(cursor, isLast, page.getRecords());
     }
 

@@ -80,4 +80,10 @@ public class OtherTest {
         return right;
     }
 
+    @Test
+    public void testInt(){
+        
+
+    }
+
 }
